@@ -43,10 +43,17 @@ pub struct UserToken {
 }
 
 /// The `DisplayClaims.xui[]` entry inside an XSTS ticket, carrying the user hash (`uhs`)
-/// needed to build an `XBL3.0 x=<uhs>;<token>` authorization header.
+/// needed to build an `XBL3.0 x=<uhs>;<token>` authorization header, plus the gamertag/XUID of
+/// the signed-in user themselves.
 #[derive(Debug, Clone, Deserialize)]
 pub struct XuiItem {
     pub uhs: String,
+    /// The signed-in user's own gamertag. Present on Xbox Live relying-party tickets; may be
+    /// absent for other relying parties.
+    pub gtg: Option<String>,
+    /// The signed-in user's own XUID. Present on Xbox Live relying-party tickets; may be
+    /// absent for other relying parties.
+    pub xid: Option<String>,
 }
 
 /// The `DisplayClaims` object inside an XSTS ticket.
@@ -78,5 +85,22 @@ impl XstsToken {
     pub fn authorization_header(&self) -> Option<String> {
         self.user_hash()
             .map(|uhs| format!("XBL3.0 x={uhs};{}", self.token))
+    }
+
+    /// The signed-in user's own gamertag, from the first display-claims entry.
+    pub fn gamertag(&self) -> Option<&str> {
+        self.display_claims
+            .xui
+            .first()
+            .and_then(|xui| xui.gtg.as_deref())
+    }
+
+    /// The signed-in user's own XUID, from the first display-claims entry.
+    pub fn xuid(&self) -> Option<Xuid> {
+        self.display_claims
+            .xui
+            .first()
+            .and_then(|xui| xui.xid.clone())
+            .map(Xuid)
     }
 }
