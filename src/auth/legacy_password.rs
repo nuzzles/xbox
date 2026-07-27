@@ -158,7 +158,7 @@ async fn get_user_token(client: &Client, rps_ticket: &str) -> Result<UserToken, 
             "Properties": {
                 "AuthMethod": "RPS",
                 "SiteName": "user.auth.xboxlive.com",
-                "RpsTicket": format!("d={rps_ticket}"),
+                "RpsTicket": format!("t={rps_ticket}"),
             }
         }))
         .timeout(Duration::from_secs(10))
