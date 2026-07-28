@@ -31,7 +31,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = XboxClient::new(provider);
 
     let xuid = client.gamertag_to_xuid("Some Gamertag").await?;
-    let xsts = client.xsts_ticket(RelyingParty::Xbox).await?;
+    let xsts = client.xsts_ticket(RelyingParty::XBOX).await?;
 
     println!("xuid={xuid} xsts_expires_at={}", xsts.expires_at);
     Ok(())
