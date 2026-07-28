@@ -30,6 +30,11 @@ pub enum XboxError {
     #[error("failed to parse login post URL from Microsoft login page")]
     PostUrlNotFound,
 
+    /// Microsoft rejected the supplied username or password.
+    #[cfg(feature = "legacy-password-login")]
+    #[error("invalid Microsoft account username or password")]
+    InvalidCredentials,
+
     /// The login redirect response was missing a `Location` header.
     #[cfg(feature = "legacy-password-login")]
     #[error("login redirect response was missing a Location header")]

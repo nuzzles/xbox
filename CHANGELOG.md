@@ -15,6 +15,16 @@ You can find its changes [documented below](#010---2026-07-27).
 
 This release has an [MSRV][] of 1.96.
 
+### Changed
+
+- Replaced the closed `RelyingParty` enum with an extensible URI-backed type. Use
+  `RelyingParty::XBOX` for Xbox Live or `RelyingParty::new` for downstream services.
+
+### Fixed
+
+- Report invalid Microsoft account usernames or passwords as `XboxError::InvalidCredentials`
+  instead of `XboxError::MissingRedirectLocation` during legacy password login.
+
 ## [0.1.0] - 2026-07-27
 
 This release has an [MSRV][] of 1.96.

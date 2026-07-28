@@ -32,6 +32,12 @@ static POST_RE: LazyLock<Regex> = LazyLock::new(|| {
 });
 static RPS_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r".*access_token=(.*?)&").expect("RPS_RE is a valid regex"));
+static INVALID_CREDENTIALS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"(?i)(AADSTS(?:50034|50126)|(?:account|username) or password is incorrect|incorrect password)",
+    )
+    .expect("INVALID_CREDENTIALS_RE is a valid regex")
+});
 
 #[derive(Debug, Serialize)]
 struct LoginForm {
@@ -136,10 +142,18 @@ async fn live_login(
         .headers()
         .get("Location")
         .and_then(|v| v.to_str().ok())
-        .ok_or(XboxError::MissingRedirectLocation)?;
+        .map(str::to_owned);
+
+    let Some(location) = location else {
+        let body = response.text().await?;
+        if INVALID_CREDENTIALS_RE.is_match(&body) {
+            return Err(XboxError::InvalidCredentials);
+        }
+        return Err(XboxError::MissingRedirectLocation);
+    };
 
     RPS_RE
-        .captures(location)
+        .captures(&location)
         .and_then(|c| c.get(1))
         .map(|m| m.as_str().to_string())
         .ok_or(XboxError::RpsTicketNotFound)
@@ -213,5 +227,12 @@ mod tests {
         let captures = RPS_RE.captures(location);
         assert!(captures.is_some());
         assert_eq!(captures.unwrap().get(1).unwrap().as_str(), "EwAAA...");
+    }
+
+    #[test]
+    fn recognizes_invalid_credentials_response() {
+        assert!(INVALID_CREDENTIALS_RE.is_match(
+            r#"{\"sErrorCode\":\"AADSTS50126\",\"sErrTxt\":\"Your account or password is incorrect.\"}"#
+        ));
     }
 }

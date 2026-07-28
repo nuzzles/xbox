@@ -189,8 +189,9 @@ async fn xsts_ticket_is_scoped_per_relying_party() {
         },
     );
 
-    let xbox_ticket = client.xsts_ticket(RelyingParty::Xbox).await.unwrap();
-    let halo_ticket = client.xsts_ticket(RelyingParty::Halo).await.unwrap();
+    let xbox_ticket = client.xsts_ticket(RelyingParty::XBOX).await.unwrap();
+    let downstream = RelyingParty::new("https://example.test/");
+    let halo_ticket = client.xsts_ticket(downstream).await.unwrap();
 
     assert_eq!(xbox_ticket.token, "fake-xsts-token");
     assert_eq!(halo_ticket.token, "fake-xsts-token");

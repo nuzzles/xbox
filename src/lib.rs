@@ -16,7 +16,7 @@
 //! let client = XboxClient::new(provider);
 //!
 //! let xuid = client.gamertag_to_xuid("Some Gamertag").await?;
-//! let xsts = client.xsts_ticket(RelyingParty::Xbox).await?;
+//! let xsts = client.xsts_ticket(RelyingParty::XBOX).await?;
 //!
 //! println!("xuid={xuid} xsts_expires_at={}", xsts.not_after);
 //! # Ok(())

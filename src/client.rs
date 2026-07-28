@@ -109,8 +109,8 @@ impl<P: XblAuthProvider> XboxClient<P> {
         self.xuid_cache
             .get_or_refresh(gamertag_owned.clone(), || async {
                 let xuid = self
-                    .with_single_retry(RelyingParty::Xbox, || async {
-                        let xsts = self.xsts_ticket(RelyingParty::Xbox).await?;
+                    .with_single_retry(RelyingParty::XBOX, || async {
+                        let xsts = self.xsts_ticket(RelyingParty::XBOX).await?;
                         let authorization = xsts
                             .authorization_header()
                             .ok_or_else(|| XboxError::PersonNotFound(gamertag_owned.clone()))?;

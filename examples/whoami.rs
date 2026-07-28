@@ -37,7 +37,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let provider = LegacyPasswordProvider::new(&username, &password);
     let client = XboxClient::new(provider);
 
-    let xsts = client.xsts_ticket(RelyingParty::Xbox).await?;
+    let xsts = client.xsts_ticket(RelyingParty::XBOX).await?;
     println!(
         "logged in as {} (xuid {})",
         xsts.gamertag().unwrap_or("<unknown>"),
