@@ -6,9 +6,9 @@ use crate::error::XboxError;
 /// Something that can produce a fresh Xbox Live "user token" on demand.
 ///
 /// This is the extension point for how a caller authenticates to Xbox Live in the first
-/// place. v1 ships exactly one implementor, `LegacyPasswordProvider` (behind the
-/// `legacy-password-login` feature); a real OAuth2 device-code provider is a planned,
-/// additive follow-up behind this same trait.
+/// place. [`super::OAuthRefreshTokenProvider`] uses a refresh token obtained
+/// through an interactive authorization-code flow. `LegacyPasswordProvider`
+/// remains available behind the `legacy-password-login` feature.
 #[async_trait]
 pub trait XblAuthProvider: Send + Sync {
     /// Produces a fresh Xbox Live user token, including its expiry.

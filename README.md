@@ -44,8 +44,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 | --- | --- | --- |
 | `legacy-password-login` | ✅ | Enables `LegacyPasswordProvider`, which signs in via the same username/password flow the Xbox Live web login page uses. This is not an officially documented API and may break if Microsoft changes their login page. |
 
-A real OAuth2 device-code provider (the officially documented path, with refresh-token support) is planned as an
-additive, non-breaking follow-up behind the same [`XblAuthProvider`](src/auth/provider.rs) trait.
+## Microsoft OAuth sign-in
+
+For unattended services, register an application that accepts personal Microsoft
+accounts. Configure a redirect URI and grant `XboxLive.signin` and
+`XboxLive.offline_access`. Open `OAuthClient::authorization_url` in a browser,
+verify the returned `state`, and exchange the one-time code with
+`OAuthClient::exchange_code`. Store the refresh token as a secret. See
+[the Xbox authentication walkthrough](https://den.dev/blog/halo-api-authentication/)
+for the Microsoft app-registration and consent flow.
+
+`OAuthRefreshTokenProvider` uses the stored refresh token to obtain an Xbox user
+token. It saves replacement refresh tokens through `RefreshTokenStore`, whose
+conditional update must be atomic across all service instances. The store must
+be durable and access restricted; process memory or a static environment
+variable is not sufficient for rotating tokens. If consent is revoked or
+Microsoft requires a new interactive challenge, the application must repeat
+the browser authorization. OAuth avoids routine username/password sign-ins but
+cannot guarantee that a Microsoft account will never require interaction.
 
 ## MSRV
 
