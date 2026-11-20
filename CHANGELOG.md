@@ -8,12 +8,28 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 -->
 
-The latest published xbox release is [0.2.0](#020---2026-07-27) which was released on 2026-07-27.
-You can find its changes [documented below](#020---2026-07-27).
+Changes for each xbox release are documented below.
 
 ## [Unreleased]
 
 This release has an [MSRV][] of 1.96.
+
+## [0.3.0] - 2026-11-19
+
+This release has an [MSRV][] of 1.96.
+
+### Added
+
+- Added Microsoft OAuth authorization-code and refresh-token support with `OAuthClient` and
+  `OAuthRefreshTokenProvider` for unattended Xbox Live authentication.
+- Added `RefreshTokenStore` for durable, atomic refresh-token rotation across service instances.
+- Added `OAuthClient::with_request_timeout` to configure Microsoft token and Xbox user-authentication
+  request timeouts (10 seconds by default).
+
+### Changed
+
+- Documented separate OAuth and legacy password quick-start examples. Legacy password login remains
+  enabled by default through the `legacy-password-login` feature.
 
 ## [0.2.0] - 2026-07-27
 
@@ -40,6 +56,7 @@ This release has an [MSRV][] of 1.96.
 
 [MSRV]: README.md#msrv
 
-[Unreleased]: https://github.com/nuzzles/xbox/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/nuzzles/xbox/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/nuzzles/xbox/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/nuzzles/xbox/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/nuzzles/xbox/releases/tag/v0.1.0
