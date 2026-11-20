@@ -17,7 +17,7 @@ use crate::error::XboxError;
 use crate::models::UserToken;
 
 const SCOPES: &str = "XboxLive.signin XboxLive.offline_access";
-const REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
+const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// Microsoft and Xbox endpoints. Override these for tests or private gateways.
 #[derive(Clone)]
@@ -60,6 +60,7 @@ pub struct OAuthClient {
     client_secret: String,
     http: Client,
     endpoints: OAuthEndpoints,
+    request_timeout: Duration,
 }
 
 impl OAuthClient {
@@ -77,7 +78,15 @@ impl OAuthClient {
             client_secret: client_secret.into(),
             http: Client::new(),
             endpoints,
+            request_timeout: DEFAULT_REQUEST_TIMEOUT,
         }
+    }
+
+    /// Set the timeout for each Microsoft token and Xbox user-authentication
+    /// request. The default is 10 seconds per request.
+    pub fn with_request_timeout(mut self, timeout: Duration) -> Self {
+        self.request_timeout = timeout;
+        self
     }
 
     /// Build a browser URL for the one-time authorization-code grant. The caller
@@ -154,7 +163,7 @@ impl OAuthClient {
             .http
             .post(&self.endpoints.token_url)
             .form(fields)
-            .timeout(REQUEST_TIMEOUT)
+            .timeout(self.request_timeout)
             .send()
             .await?;
         if !response.status().is_success() {
@@ -190,7 +199,7 @@ impl OAuthClient {
                 "TokenType": "JWT",
                 "Properties": {"AuthMethod": "RPS", "SiteName": "user.auth.xboxlive.com", "RpsTicket": format!("d={access_token}")}
             }))
-            .timeout(REQUEST_TIMEOUT).send().await?;
+            .timeout(self.request_timeout).send().await?;
         if !response.status().is_success() {
             return Err(XboxError::HttpStatus {
                 url: url.clone(),
@@ -334,6 +343,41 @@ mod tests {
             .unwrap();
         assert_eq!(tokens.access_token, "access");
         assert_eq!(tokens.refresh_token, "refresh");
+    }
+
+    #[tokio::test]
+    async fn configured_timeout_applies_to_microsoft_token_request() {
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/token"))
+            .respond_with(ResponseTemplate::new(200).set_delay(Duration::from_millis(200)))
+            .mount(&server)
+            .await;
+
+        let error = client(&server)
+            .with_request_timeout(Duration::from_millis(20))
+            .refresh("refresh")
+            .await
+            .err()
+            .expect("request should time out");
+        assert!(matches!(error, XboxError::Network(error) if error.is_timeout()));
+    }
+
+    #[tokio::test]
+    async fn configured_timeout_applies_to_xbox_user_request() {
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/user/authenticate"))
+            .respond_with(ResponseTemplate::new(200).set_delay(Duration::from_millis(200)))
+            .mount(&server)
+            .await;
+
+        let error = client(&server)
+            .with_request_timeout(Duration::from_millis(20))
+            .xbox_user_token("access")
+            .await
+            .expect_err("request should time out");
+        assert!(matches!(error, XboxError::Network(error) if error.is_timeout()));
     }
 
     #[tokio::test]

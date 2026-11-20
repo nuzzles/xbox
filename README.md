@@ -63,6 +63,10 @@ Microsoft requires a new interactive challenge, the application must repeat
 the browser authorization. OAuth avoids routine username/password sign-ins but
 cannot guarantee that a Microsoft account will never require interaction.
 
+Microsoft token and Xbox user-authentication requests each time out after 10
+seconds by default. Set a different per-request limit with
+`OAuthClient::new(client_id, client_secret).with_request_timeout(Duration::from_secs(20))`.
+
 ## MSRV
 
 This crate has a [Minimum Supported Rust Version (MSRV)][MSRV] of 1.96.
