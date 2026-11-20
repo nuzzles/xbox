@@ -19,53 +19,37 @@ Unofficial Xbox Live authentication, gamertag/XUID resolution, and profile clien
 - Caches every credential with expiry-awareness and single-flight de-duplication, so concurrent callers never
   trigger redundant network round trips, and callers never pay full re-authentication cost on every request.
 
-## Quick start
+## OAuth example
 
-```rust,no_run
-use xbox::auth::LegacyPasswordProvider;
-use xbox::{RelyingParty, XboxClient};
+Authorize once with `OAuthClient::authorization_url` and `exchange_code`, then
+save the refresh token in a durable `RefreshTokenStore` with atomic updates.
+See the [Xbox authentication walkthrough](https://den.dev/blog/halo-api-authentication/)
+for app registration and consent.
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let provider = LegacyPasswordProvider::new("my-username", "my-password");
-    let client = XboxClient::new(provider);
+```rust
+use std::time::Duration;
+use xbox::auth::{OAuthClient, OAuthRefreshTokenProvider};
+use xbox::XboxClient;
 
-    let xuid = client.gamertag_to_xuid("Some Gamertag").await?;
-    let xsts = client.xsts_ticket(RelyingParty::XBOX).await?;
-
-    println!("xuid={xuid} xsts_expires_at={}", xsts.expires_at);
-    Ok(())
-}
+let oauth = OAuthClient::new(client_id, client_secret)
+    .with_request_timeout(Duration::from_secs(20)); // Default: 10 seconds per request.
+let client = XboxClient::new(OAuthRefreshTokenProvider::new(oauth, token_store));
+let xuid = client.gamertag_to_xuid("Some Gamertag").await?;
 ```
 
-## Feature flags
+## Legacy password example
 
-| Feature | Default | Description |
-| --- | --- | --- |
-| `legacy-password-login` | ✅ | Enables `LegacyPasswordProvider`, which signs in via the same username/password flow the Xbox Live web login page uses. This is not an officially documented API and may break if Microsoft changes their login page. |
+`LegacyPasswordProvider` requires the `legacy-password-login` feature, which is
+enabled by default. It relies on Microsoft's undocumented login page and may
+break when that page changes.
 
-## Microsoft OAuth sign-in
+```rust
+use xbox::auth::LegacyPasswordProvider;
+use xbox::XboxClient;
 
-For unattended services, register an application that accepts personal Microsoft
-accounts. Configure a redirect URI and grant `XboxLive.signin` and
-`XboxLive.offline_access`. Open `OAuthClient::authorization_url` in a browser,
-verify the returned `state`, and exchange the one-time code with
-`OAuthClient::exchange_code`. Store the refresh token as a secret. See
-[the Xbox authentication walkthrough](https://den.dev/blog/halo-api-authentication/)
-for the Microsoft app-registration and consent flow.
-
-`OAuthRefreshTokenProvider` uses the stored refresh token to obtain an Xbox user
-token. It saves replacement refresh tokens through `RefreshTokenStore`, whose
-conditional update must be atomic across all service instances. The store must
-be durable and access restricted; process memory or a static environment
-variable is not sufficient for rotating tokens. If consent is revoked or
-Microsoft requires a new interactive challenge, the application must repeat
-the browser authorization. OAuth avoids routine username/password sign-ins but
-cannot guarantee that a Microsoft account will never require interaction.
-
-Microsoft token and Xbox user-authentication requests each time out after 10
-seconds by default. Set a different per-request limit with
-`OAuthClient::new(client_id, client_secret).with_request_timeout(Duration::from_secs(20))`.
+let client = XboxClient::new(LegacyPasswordProvider::new(username, password));
+let xuid = client.gamertag_to_xuid("Some Gamertag").await?;
+```
 
 ## MSRV
 
