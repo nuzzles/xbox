@@ -54,13 +54,16 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo doc --no-deps --all-features
 
-  wasm:
-    name: wasm library
+  check:
+    name: check (${{ matrix.target }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [x86_64-unknown-linux-gnu, wasm32-unknown-unknown]
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: wasm32-unknown-unknown
+          targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
-      - run: cargo check --lib --target wasm32-unknown-unknown --all-features
+      - run: cargo check --lib --target ${{ matrix.target }} --all-features
