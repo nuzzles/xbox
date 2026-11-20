@@ -8,7 +8,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 -->
 
-Changes for each xbox release are documented below.
+Changes for each release are documented below.
 
 ## [Unreleased]
 
@@ -25,11 +25,6 @@ This release has an [MSRV][] of 1.96.
 - Added `RefreshTokenStore` for durable, atomic refresh-token rotation across service instances.
 - Added `OAuthClient::with_request_timeout` to configure Microsoft token and Xbox user-authentication
   request timeouts (10 seconds by default).
-
-### Changed
-
-- Documented separate OAuth and legacy password quick-start examples. Legacy password login remains
-  enabled by default through the `legacy-password-login` feature.
 
 ## [0.2.0] - 2026-07-27
 
