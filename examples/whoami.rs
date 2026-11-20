@@ -1,4 +1,5 @@
 //! Manual smoke test against the real Xbox Live API using your own credentials.
+//! Native platforms only.
 //!
 //! ```sh
 //! cargo run --example whoami
@@ -15,6 +16,9 @@ use std::io::{self, Write};
 use xbox::auth::LegacyPasswordProvider;
 use xbox::{RelyingParty, XboxClient};
 
+#[cfg(target_arch = "wasm32")]
+compile_error!("the whoami example requires a native target");
+
 fn prompt_line(label: &str) -> Result<String, Box<dyn std::error::Error>> {
     print!("{label}: ");
     io::stdout().flush()?;
@@ -26,12 +30,12 @@ fn prompt_line(label: &str) -> Result<String, Box<dyn std::error::Error>> {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let username = match env::var("XBOX_USERNAME") {
-        Ok(username) => username,
-        Err(_) => prompt_line("Xbox Live email")?,
+        Ok(username) if !username.trim().is_empty() => username,
+        _ => prompt_line("Xbox Live email")?,
     };
     let password = match env::var("XBOX_PASSWORD") {
-        Ok(password) => password,
-        Err(_) => rpassword::prompt_password("Xbox Live password: ")?,
+        Ok(password) if !password.is_empty() => password,
+        _ => rpassword::prompt_password("Xbox Live password: ")?,
     };
 
     let provider = LegacyPasswordProvider::new(&username, &password);

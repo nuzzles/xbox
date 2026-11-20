@@ -1,11 +1,14 @@
 //! One-time Microsoft browser sign-in that prints a new Xbox OAuth refresh token.
 //!
-//! Register `http://localhost:8765/callback` as a redirect URI for your app, then run:
-//! `XBOX_OAUTH_REDIRECT_URI=http://localhost:8765/callback cargo run --example oauth_refresh_token`
+//! Native platforms only. Register a localhost HTTP callback URI with an explicit port
+//! for your Microsoft app, then run `cargo run --example localhost_oauth_flow`.
+//! Set `XBOX_OAUTH_REDIRECT_URI`, `XBOX_OAUTH_CLIENT_ID`, and
+//! `XBOX_OAUTH_CLIENT_SECRET` or enter them when prompted.
 //! The token is printed to stdout and is never saved by this example.
 
 use std::env;
 use std::error::Error;
+use std::io::{self, Write};
 use std::time::Duration;
 
 use reqwest::Url;
@@ -13,12 +16,38 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use xbox::auth::OAuthClient;
 
+#[cfg(target_arch = "wasm32")]
+compile_error!("the localhost_oauth_flow example requires a native target");
+
 type ExampleError = Box<dyn Error>;
 
-fn callback_uri() -> Result<Url, ExampleError> {
-    let raw = env::var("XBOX_OAUTH_REDIRECT_URI")
-        .map_err(|_| "set XBOX_OAUTH_REDIRECT_URI to your registered localhost callback URI")?;
-    let uri = Url::parse(&raw)?;
+fn prompt_line(label: &str) -> Result<String, ExampleError> {
+    print!("{label}: ");
+    io::stdout().flush()?;
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)?;
+    Ok(input.trim().to_string())
+}
+
+fn setting(name: &str, label: &str, secret: bool) -> Result<String, ExampleError> {
+    if let Ok(value) = env::var(name)
+        && !value.trim().is_empty()
+    {
+        return Ok(value);
+    }
+    let value = if secret {
+        rpassword::prompt_password(format!("{label}: "))?
+    } else {
+        prompt_line(label)?
+    };
+    if value.trim().is_empty() {
+        return Err(format!("{name} cannot be empty").into());
+    }
+    Ok(value)
+}
+
+fn callback_uri(raw: &str) -> Result<Url, ExampleError> {
+    let uri = Url::parse(raw)?;
     if uri.scheme() != "http"
         || !matches!(uri.host_str(), Some("localhost" | "127.0.0.1"))
         || uri.port().is_none()
@@ -97,10 +126,18 @@ async fn receive_code(
 
 #[tokio::main]
 async fn main() -> Result<(), ExampleError> {
-    let redirect = callback_uri()?;
+    let redirect = callback_uri(&setting(
+        "XBOX_OAUTH_REDIRECT_URI",
+        "Registered localhost callback URI",
+        false,
+    )?)?;
     let client = OAuthClient::new(
-        env::var("XBOX_OAUTH_CLIENT_ID")?,
-        env::var("XBOX_OAUTH_CLIENT_SECRET")?,
+        setting("XBOX_OAUTH_CLIENT_ID", "Microsoft app client ID", false)?,
+        setting(
+            "XBOX_OAUTH_CLIENT_SECRET",
+            "Microsoft app client secret",
+            true,
+        )?,
     );
     let port = redirect.port().expect("validated port");
     let listener = TcpListener::bind(("127.0.0.1", port)).await.map_err(|error| {
