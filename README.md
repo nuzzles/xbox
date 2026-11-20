@@ -23,6 +23,18 @@ Unofficial Xbox Live authentication, gamertag/XUID resolution, and profile clien
 
 ### OAuth
 
+To print a fresh OAuth refresh token without saving it, register a localhost redirect URI
+(for example `http://localhost:8765/callback`) for your Microsoft app, then run:
+
+```sh
+XBOX_OAUTH_REDIRECT_URI=http://localhost:8765/callback cargo run --example oauth_refresh_token
+```
+
+Set `XBOX_OAUTH_CLIENT_ID` and `XBOX_OAUTH_CLIENT_SECRET` in the environment first. The example
+opens browser sign-in, receives the authorization code on localhost, and prints only the new
+refresh token to stdout. Treat the terminal output as a secret. Generating a separate token does
+not write to an existing token store.
+
 Authorize once with `OAuthClient::authorization_url` and `exchange_code`, then
 save the refresh token in a durable `RefreshTokenStore` with atomic updates.
 See the [Xbox authentication walkthrough](https://den.dev/blog/halo-api-authentication/)

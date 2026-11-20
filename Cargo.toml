@@ -37,3 +37,7 @@ required-features = ["legacy-password-login"]
 tokio = { version = "1.53.1", features = ["full"] }
 wiremock = "0.6.5"
 rpassword = "7.5.4"
+uuid = { version = "1.24", features = ["v4"] }
+
+[[example]]
+name = "oauth_refresh_token"
