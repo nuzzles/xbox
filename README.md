@@ -19,7 +19,9 @@ Unofficial Xbox Live authentication, gamertag/XUID resolution, and profile clien
 - Caches every credential with expiry-awareness and single-flight de-duplication, so concurrent callers never
   trigger redundant network round trips, and callers never pay full re-authentication cost on every request.
 
-## OAuth example
+## Quick start
+
+### OAuth
 
 Authorize once with `OAuthClient::authorization_url` and `exchange_code`, then
 save the refresh token in a durable `RefreshTokenStore` with atomic updates.
@@ -37,7 +39,7 @@ let client = XboxClient::new(OAuthRefreshTokenProvider::new(oauth, token_store))
 let xuid = client.gamertag_to_xuid("Some Gamertag").await?;
 ```
 
-## Legacy password example
+### Legacy password
 
 `LegacyPasswordProvider` requires the `legacy-password-login` feature, which is
 enabled by default. It relies on Microsoft's undocumented login page and may
@@ -50,6 +52,12 @@ use xbox::XboxClient;
 let client = XboxClient::new(LegacyPasswordProvider::new(username, password));
 let xuid = client.gamertag_to_xuid("Some Gamertag").await?;
 ```
+
+## Feature flags
+
+| Feature | Default | Description |
+| --- | --- | --- |
+| `legacy-password-login` | Yes | Enables `LegacyPasswordProvider`, which uses Microsoft's undocumented login page. |
 
 ## MSRV
 
