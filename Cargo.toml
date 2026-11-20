@@ -18,15 +18,15 @@ default = ["legacy-password-login"]
 legacy-password-login = ["regex"]
 
 [dependencies]
-reqwest = { version = "0.13.4", features = ["json", "cookies", "form"] }
+reqwest = { version = "0.13.5", features = ["json", "cookies", "form"] }
 serde = { version = "1.0.229", features = ["derive"] }
-serde_json = "1.0.151"
-thiserror = "2.0.19"
-tokio = { version = "1.53.1", features = ["sync", "time", "macros", "rt"] }
+serde_json = "1.0.154"
+thiserror = "2.0.21"
+tokio = { version = "1.54.1", features = ["sync", "time", "macros", "rt"] }
 chrono = { version = "0.4.45", features = ["serde"] }
-async-trait = "0.1.91"
+async-trait = "0.1.92"
 dashmap = "6.2.1"
-regex = { version = "1.13.1", optional = true }
+regex = { version = "1.13.2", optional = true }
 tracing = "0.1.44"
 
 [[example]]
@@ -34,6 +34,6 @@ name = "whoami"
 required-features = ["legacy-password-login"]
 
 [dev-dependencies]
-tokio = { version = "1.53.1", features = ["full"] }
+tokio = { version = "1.54.1", features = ["full"] }
 wiremock = "0.6.5"
-rpassword = "7.5.4"
+rpassword = "7.5.5"
