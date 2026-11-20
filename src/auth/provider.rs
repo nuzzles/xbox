@@ -9,7 +9,8 @@ use crate::error::XboxError;
 /// place. [`super::OAuthRefreshTokenProvider`] uses a refresh token obtained
 /// through an interactive authorization-code flow. `LegacyPasswordProvider`
 /// remains available behind the `legacy-password-login` feature.
-#[async_trait]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait XblAuthProvider: Send + Sync {
     /// Produces a fresh Xbox Live user token, including its expiry.
     ///

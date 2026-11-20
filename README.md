@@ -42,7 +42,7 @@ let xuid = client.gamertag_to_xuid("Some Gamertag").await?;
 ### Legacy password
 
 `LegacyPasswordProvider` requires the `legacy-password-login` feature, which is
-enabled by default. It relies on Microsoft's undocumented login page and may
+enabled by default on native targets. It relies on Microsoft's undocumented login page and may
 break when that page changes.
 
 ```rust
@@ -57,7 +57,7 @@ let xuid = client.gamertag_to_xuid("Some Gamertag").await?;
 
 | Feature | Default | Description |
 | --- | --- | --- |
-| `legacy-password-login` | Yes | Enables `LegacyPasswordProvider`, which uses Microsoft's undocumented login page. |
+| `legacy-password-login` | Yes | Enables `LegacyPasswordProvider` on native targets; it uses Microsoft's undocumented login page. |
 
 ## MSRV
 
