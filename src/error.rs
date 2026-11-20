@@ -44,6 +44,22 @@ pub enum XboxError {
     #[cfg(feature = "legacy-password-login")]
     #[error("failed to extract access token from login redirect URL")]
     RpsTicketNotFound,
+
+    /// The Microsoft OAuth exchange was rejected. Response bodies are deliberately omitted.
+    #[error("Microsoft OAuth token request was rejected ({0})")]
+    OAuthRejected(&'static str),
+
+    /// Microsoft returned an unexpected OAuth response without a usable token.
+    #[error("Microsoft OAuth token response was incomplete")]
+    OAuthIncompleteResponse,
+
+    /// Invalid OAuth endpoint or authorization URL configuration.
+    #[error("Microsoft OAuth configuration is invalid")]
+    OAuthConfiguration,
+
+    /// A caller-supplied refresh-token store failed without exposing token contents.
+    #[error("OAuth refresh-token store failed ({0})")]
+    OAuthTokenStore(&'static str),
 }
 
 impl From<reqwest::Error> for XboxError {

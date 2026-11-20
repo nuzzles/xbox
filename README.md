@@ -21,31 +21,43 @@ Unofficial Xbox Live authentication, gamertag/XUID resolution, and profile clien
 
 ## Quick start
 
-```rust,no_run
+### OAuth
+
+Authorize once with `OAuthClient::authorization_url` and `exchange_code`, then
+save the refresh token in a durable `RefreshTokenStore` with atomic updates.
+See the [Xbox authentication walkthrough](https://den.dev/blog/halo-api-authentication/)
+for app registration and consent.
+
+```rust
+use std::time::Duration;
+use xbox::auth::{OAuthClient, OAuthRefreshTokenProvider};
+use xbox::XboxClient;
+
+let oauth = OAuthClient::new(client_id, client_secret)
+    .with_request_timeout(Duration::from_secs(20)); // Default: 10 seconds per request.
+let client = XboxClient::new(OAuthRefreshTokenProvider::new(oauth, token_store));
+let xuid = client.gamertag_to_xuid("Some Gamertag").await?;
+```
+
+### Legacy password
+
+`LegacyPasswordProvider` requires the `legacy-password-login` feature, which is
+enabled by default. It relies on Microsoft's undocumented login page and may
+break when that page changes.
+
+```rust
 use xbox::auth::LegacyPasswordProvider;
-use xbox::{RelyingParty, XboxClient};
+use xbox::XboxClient;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let provider = LegacyPasswordProvider::new("my-username", "my-password");
-    let client = XboxClient::new(provider);
-
-    let xuid = client.gamertag_to_xuid("Some Gamertag").await?;
-    let xsts = client.xsts_ticket(RelyingParty::XBOX).await?;
-
-    println!("xuid={xuid} xsts_expires_at={}", xsts.expires_at);
-    Ok(())
-}
+let client = XboxClient::new(LegacyPasswordProvider::new(username, password));
+let xuid = client.gamertag_to_xuid("Some Gamertag").await?;
 ```
 
 ## Feature flags
 
 | Feature | Default | Description |
 | --- | --- | --- |
-| `legacy-password-login` | ✅ | Enables `LegacyPasswordProvider`, which signs in via the same username/password flow the Xbox Live web login page uses. This is not an officially documented API and may break if Microsoft changes their login page. |
-
-A real OAuth2 device-code provider (the officially documented path, with refresh-token support) is planned as an
-additive, non-breaking follow-up behind the same [`XblAuthProvider`](src/auth/provider.rs) trait.
+| `legacy-password-login` | Yes | Enables `LegacyPasswordProvider`, which uses Microsoft's undocumented login page. |
 
 ## MSRV
 
