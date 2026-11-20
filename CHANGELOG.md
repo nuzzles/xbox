@@ -14,6 +14,15 @@ Changes for each release are documented below.
 
 This release has an [MSRV][] of 1.96.
 
+## [0.3.1] - 2026-11-19
+
+This release has an [MSRV][] of 1.96.
+
+### Fixed
+
+- Allow OAuth authentication futures to compile for WebAssembly targets.
+- Exclude native-only legacy password login from WebAssembly builds, including builds with all features enabled.
+
 ## [0.3.0] - 2026-11-19
 
 This release has an [MSRV][] of 1.96.
@@ -51,7 +60,8 @@ This release has an [MSRV][] of 1.96.
 
 [MSRV]: README.md#msrv
 
-[Unreleased]: https://github.com/nuzzles/xbox/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/nuzzles/xbox/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/nuzzles/xbox/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/nuzzles/xbox/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/nuzzles/xbox/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/nuzzles/xbox/releases/tag/v0.1.0

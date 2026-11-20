@@ -215,7 +215,8 @@ impl OAuthClient {
 
 /// Persist refresh tokens in a durable, restricted store. The conditional write
 /// must be atomic across every process using the same Microsoft account.
-#[async_trait]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait RefreshTokenStore: Send + Sync {
     async fn load(&self) -> Result<String, XboxError>;
     /// Replace `expected` with `replacement` only when `expected` is still
@@ -235,7 +236,8 @@ impl<S: RefreshTokenStore> OAuthRefreshTokenProvider<S> {
     }
 }
 
-#[async_trait]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl<S: RefreshTokenStore> XblAuthProvider for OAuthRefreshTokenProvider<S> {
     async fn user_token(&self) -> Result<CachedToken<String>, XboxError> {
         let mut current = self.store.load().await?;
